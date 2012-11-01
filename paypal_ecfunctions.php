@@ -170,17 +170,25 @@ include_once("config.php");
 	'       padata:				cart items details
 	'--------------------------------------------------------------------------------------------------------------------------------------------	
 	*/
-	function CallShortcutExpressCheckout( $paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $padata) 
+	function CallShortcutExpressCheckout( $paymentAmount, $padata ) 
 	{
+		global $PayPalCurrencyCode, $paymentType, $PayPalReturnURL, $PayPalCancelURL, $shipping_amt, $tax_amt;
+		
 		//------------------------------------------------------------------------------------------------------------------------------------
 		// Construct the parameter string that describes the SetExpressCheckout API call in the shortcut implementation
 		
 		$nvpstr="&PAYMENTREQUEST_0_AMT=". urlencode("$paymentAmount");
 		$nvpstr = $nvpstr . "&PAYMENTREQUEST_0_PAYMENTACTION=" . urlencode("$paymentType");
-		$nvpstr = $nvpstr . "&PAYMENTREQUEST_0_CURRENCYCODE=" . urlencode("$currencyCodeType");		
-		$nvpstr = $nvpstr . "&RETURNURL=" . urlencode("$returnURL");
-		$nvpstr = $nvpstr . "&CANCELURL=" . urlencode("$cancelURL");
+		$nvpstr = $nvpstr . "&PAYMENTREQUEST_0_CURRENCYCODE=" . urlencode("$PayPalCurrencyCode");		
+		$nvpstr = $nvpstr . "&RETURNURL=" . urlencode("$PayPalReturnURL");
+		$nvpstr = $nvpstr . "&CANCELURL=" . urlencode("$PayPalCancelURL");
 		
+		if($shipping_amt > 0)
+			$nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($shipping_amt);
+
+		if($tax_amt > 0)
+			$nvpstr = $nvpstr . '&PAYMENTREQUEST_0_TAXAMT='.urlencode($tax_amt);
+			
 		$nvpstr = $nvpstr . '&ALLOWNOTE=1';
 		$nvpstr = $nvpstr . '&REQCONFIRMSHIPPING=1'; // To require that the shipping address be a PayPal confirmed address
 		$nvpstr = $nvpstr . $padata;		
@@ -260,8 +268,10 @@ include_once("config.php");
 	'		The NVP Collection object of the DoExpressCheckoutPayment Call Response.
 	'--------------------------------------------------------------------------------------------------------------------------------------------	
 	*/
-	function ConfirmPayment( $FinalPaymentAmt, $currencyCodeType, $paymentType )
+	function ConfirmPayment( $FinalPaymentAmt )
 	{
+		global $PayPalCurrencyCode, $paymentType;
+		
 		/* 	Gather the information to make the final call tofinalize the PayPal payment. 
 			The variable nvpstr holds the name value pairs		  
 		*/
@@ -271,7 +281,7 @@ include_once("config.php");
 		$token 				= urlencode($_SESSION['TOKEN']);
 		$payerID 			= urlencode($_SESSION['payer_id']);		
 		$paymentType 		= urlencode($paymentType);
-		$currencyCodeType 	= urlencode($currencyCodeType);
+		$currencyCodeType 	= urlencode($PayPalCurrencyCode);
 		$serverName 		= urlencode($_SERVER['SERVER_NAME']);		
 		
 		$nvpstr  =  '&TOKEN=' . $token . 

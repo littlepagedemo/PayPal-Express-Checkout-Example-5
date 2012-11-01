@@ -18,7 +18,7 @@ if($_POST)
 	$ItemPrice = $_POST["itemprice"]; //Item Price
 	$ItemNumber = $_POST["itemnumber"]; //Item Number
 	$ItemQty = $_POST["itemQty"]; // Item Quantity
-	$ItemTotalPrice = number_format(($ItemPrice*$ItemQty),2); //(Item Price x Quantity = Total) Get total amount of product; 
+	$ItemTotalPrice = $ItemPrice*$ItemQty; //(Item Price x Quantity = Total) Get total amount of product; 
 	
 	// Keep in array
 	$cart_item = array("$ItemName","$ItemDesc","$ItemNumber","$ItemPrice","$ItemQty","$ItemTotalPrice"); 
@@ -68,28 +68,11 @@ $_SESSION["Payment_Amount"] = $paymentAmount;
 	if ($_SESSION['cart_item_arr']) 
 	{
 
-		// Cart items
-		$payment_request = get_payment_request();
+		// Data to be sent to paypal - in SetExpressCheckout
+		$padata = get_payment_request();
 		
 		$paymentAmount = $_SESSION["Payment_Amount"];	// from cart.php
 		
-		
-		//-------------------------------------------------
-		// Data to be sent to paypal - in SetExpressCheckout
-		//--------------------------------------------------
-		$shipping_data = '';
-		if($shipping_amt)
-				$shipping_data = '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($shipping_amt);
-				
-		$tax_data = '';
-		if($tax_amt)
-				$tax_data = '&PAYMENTREQUEST_0_TAXAMT='.urlencode($tax_amt);		
-		
-		$padata = 	$shipping_data.
-					$tax_data.					
-				 	$payment_request;				
-		//echo '<br>'.$padata;			
-					
 					
 		//'--------------------------------------------------------------------		
 		//'	Tips:  It is recommend that to save this info for the drop off rate 
@@ -102,7 +85,7 @@ $_SESSION["Payment_Amount"] = $paymentAmount;
 		//' Calls the SetExpressCheckout API call
 		//' Prepares the parameters for the SetExpressCheckout API Call
 		//'-------------------------------------------------------------		
-		$resArray = CallShortcutExpressCheckout ($paymentAmount, $PayPalCurrencyCode, $paymentType, $PayPalReturnURL, $PayPalCancelURL, $padata);
+		$resArray = CallShortcutExpressCheckout ($paymentAmount, $padata);
 		
 		$ack = strtoupper($resArray["ACK"]);
 		if($ack=="SUCCESS" || $ack=="SUCCESSWITHWARNING")

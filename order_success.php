@@ -67,7 +67,7 @@ if ( $token != "" )
 		'-------------------------------------------------
 		*/
 
-		$resArray = ConfirmPayment ( $finalPaymentAmount, $PayPalCurrencyCode, $paymentType );
+		$resArray = ConfirmPayment ( $finalPaymentAmount );
 		$ack = strtoupper($resArray["ACK"]);
 		if( $ack == "SUCCESS" || $ack == "SUCCESSWITHWARNING" )
 		{		
